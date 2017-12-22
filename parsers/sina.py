@@ -44,6 +44,7 @@ def add_root_url(keywords):
             info_json = tools.get_json_by_requests(url)
             video_info_list = info_json['list']
             if not video_info_list:
+                print(url)
                 break
             for video_info in video_info_list:
                 image_url = video_info['thumburl']

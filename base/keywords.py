@@ -45,9 +45,5 @@ class Keywords():
         return keywords
 
 if __name__ == '__main__':
-    compare_keywords = CompareKeywords()
-    text = '聂辰席是中央宣传部的聂辰席&国家新闻出版广电总局'
-
-    keywords = compare_keywords.get_keywords(text)
-    for key in keywords:
-        print(key)
+    keywords = Keywords().get_keywords()
+    print(keywords)

@@ -3,6 +3,7 @@
 
 import sys
 sys.path.append("..")
+import init
 
 import re
 import json

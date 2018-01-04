@@ -21,22 +21,41 @@ def get_release_time(release_time):
         data = tools.time.time()
         ltime = tools.time.localtime(data)
         timeStr = tools.time.strftime("%Y-%m-%d", ltime)
-        if '天前' in release_time:
+        if '年前' in release_time:
+            years = tools.re.compile('(\d+)年前').findall(release_time)
+            years_ago = (tools.datetime.datetime.now() - tools.datetime.timedelta(days=int(years[0]) * 365))
+            release_time = years_ago.strftime("%Y-%m-%d")
+
+        elif '月前' in release_time:
+            months = tools.re.compile('(\d+)月前').findall(release_time)
+            months_ago = (tools.datetime.datetime.now() - tools.datetime.timedelta(days=int(months[0]) * 30))
+            release_time = months_ago.strftime("%Y-%m-%d")
+
+        elif '周前' in release_time:
+            weeks = tools.re.compile('(\d+)周前').findall(release_time)
+            weeks_ago = (tools.datetime.datetime.now() - tools.datetime.timedelta(days=int(weeks[0]) * 7))
+            release_time = weeks_ago.strftime("%Y-%m-%d")
+
+        elif '天前' in release_time:
             ndays = tools.re.compile('(\d+)天前').findall(release_time)
             days_ago = (tools.datetime.datetime.now() - tools.datetime.timedelta(days=int(ndays[0])))
             release_time = days_ago.strftime("%Y-%m-%d")
+
         elif '小时前' in release_time:
             nhours = tools.re.compile('(\d+)小时前').findall(release_time)
             hours_ago = (tools.datetime.datetime.now() - tools.datetime.timedelta(hours=int(nhours[0])))
             release_time = hours_ago.strftime("%Y-%m-%d %H:%M")
+
         elif tools.re.compile('分钟前').findall(release_time):
             nminutes = tools.re.compile('(\d+)分钟前').findall(release_time)
             minutes_ago = (tools.datetime.datetime.now() - tools.datetime.timedelta(minutes=int(nminutes[0])))
             release_time = minutes_ago.strftime("%Y-%m-%d %H:%M")
+
         else:
             if len(release_time) < 10:
                 release_time = '%s-%s' % (timeStr[0:4], release_time)
-    except:
+    except Exception as e:
+        log.error(e)
         release_time = ''
     finally:
         return release_time
@@ -66,10 +85,10 @@ def add_root_url(keywords):
             keyword = tools.quote(keyword)
             url = 'https://so.tv.sohu.com/mts?wd=%s&c=0&v=0&length=0&limit=0&site=0&o=3&p=%s&st=&suged=&filter=0' % \
                   (keyword, page_index)
+            log.debug('处理 url = %s'%url)
             html, res = tools.get_html_by_requests(url)
             video_list_time = tools.get_tag(html, 'a', {'class': 'tcount'})
             video_list_title = tools.get_tag(html, 'div', {'class': 'pic170'})
-
             if not video_list_title:
                 break
             for info_index, video_info in enumerate(video_list_title):
@@ -79,7 +98,9 @@ def add_root_url(keywords):
                 url = video_info.a['href']
                 url = 'http:' + url
                 release_time = video_list_time[info_index].get_text()
+                print(release_time)
                 release_time = get_release_time(release_time)
+                print(release_time)
                 current_date = tools.get_current_date('%Y-%m-%d')
                 if current_date > release_time:
                     next_keyword = True

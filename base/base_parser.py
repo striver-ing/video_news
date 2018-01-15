@@ -144,9 +144,15 @@ def is_have_video_by_common(html):
 
 def save_video_info(release_time='', content='', url='', author='', title='', image_url='', site_name='', play_count = None, comment_count = None, praise_count = None, summary = '', time_length = None):
     domain = tools.get_domain(url)
+    uuid = tools.get_uuid(title, domain)
+
+    if es.get('video_news', uuid):
+        log.debug(title + ' 已存在')
+        return False
+
     content_info = {
         'domain':domain,
-        'uuid' : tools.get_uuid(title, domain),
+        'uuid' : uuid,
         'site_name': site_name,
         'image_url': image_url,
         'title': title,
@@ -164,43 +170,7 @@ def save_video_info(release_time='', content='', url='', author='', title='', im
     log.debug(tools.dumps_json(content_info))
 
     es.add('video_news', content_info, content_info['uuid'])
-
-content_info = {
-    "title": "南昌大学副院长被指性侵女生院长：我用人失察",
-    "content": "",
-    "image_url": "http://p2.ivideo.sina.com.cn/video/252/667/020/252667020.jpg",
-    "record_time": "2017-12-21 11:47:17",
-    "url": "http://video.sina.com.cn/view/252667020.html",
-    "praise_count": 0,
-    "uuid": "31ea4d35-a8ce-377f-bb6d-9846ab607aaa",
-    "author": "",
-    "play_count": 0,
-    "release_time": "2017-12-21 11:47:17",
-    "time_length": 0,
-    "summary": "",
-    "domain": "sina.com.cn",
-    "comment_count": 0,
-    "site_name": "新浪"
-}
-
-content_info = {
-    "title": "十九大代表带你学报告——钟佰均谈脱贫攻坚",
-    "domain": "qq.com",
-    "uuid": "4f73c1bf-6b67-3b32-9ddc-3d141de72f05",
-    "summary": "",
-    "image_url": "http://vpic.video.qq.com/89220912/l051527zwgx_160_90_3.jpg",
-    "url": "http://v.qq.com/x/page/l051527zwgx.html?ptag=iqiyi.news",
-    "praise_count": 0,
-    "play_count": 0,
-    "release_time": "2017-12-21",
-    "time_length": 0,
-    "author": "",
-    "content": "",
-    "site_name": "爱奇艺",
-    "comment_count": 0,
-    "record_time": "2017-12-21 11:59:17"
-}
-es.add('video_news', content_info, content_info['uuid'])
+    return True
 
 
 

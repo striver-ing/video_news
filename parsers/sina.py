@@ -51,12 +51,13 @@ def add_root_url(keywords):
                 title = tools.del_html_tag(video_info['videoname'])
                 url = video_info['url']
                 release_time = video_info['showtime']
-                current_date = tools.get_current_date('%Y-%m-%d')
-                if current_date > release_time:
+
+                is_continue = base_parser.save_video_info(image_url=image_url, url=url, title=title, release_time=release_time,
+                                            site_name=NAME)
+                if not is_continue:
                     next_keyword = True
                     break
-                base_parser.save_video_info(image_url=image_url, url=url, title=title, release_time=release_time,
-                                            site_name=NAME)
+
             if next_keyword:
                 break
 

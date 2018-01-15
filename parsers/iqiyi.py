@@ -36,13 +36,16 @@ def add_root_url(keywords):
     for keyword in keywords:
         print(keyword)
         next_keyword = False
-        for page_index in range(1, 10):
-            keyword = tools.quote(keyword)
+        keyword = tools.quote(keyword)
+        for page_index in range(1, 20):
             url = 'http://so.iqiyi.com/so/q_%s_ctg__t_0_page_%s_p_1_qc_0_rd__site__m_4_bitrate_' % (keyword, page_index)
+
+            print(url)
             html, res = tools.get_html_by_requests(url)
             video_list_title = tools.get_tag(html, 'a', {'class': 'figure-180101'})
             video_list_time = tools.get_tag(html, 'div', {'class': 'result_info'})
             if not video_list_time:
+                print('无视频列表  跳出')
                 break
 
             for info_index, video_info in enumerate(video_list_time):
@@ -51,14 +54,14 @@ def add_root_url(keywords):
                     title = tools.get_info(str(video_list_title[info_index]), 'title="(.+?)"', fetch_one=True)
                     url = tools.get_info(str(video_list_title[info_index]), 'href="(.+?)"', fetch_one=True)
                     release_time = tools.get_tag(video_info, 'em', {'class': 'result_info_desc'}, find_all=False).get_text()
-                    current_date = tools.get_current_date('%Y-%m-%d')
-                    if current_date > release_time:
+                    is_continue = base_parser.save_video_info(image_url=image_url, url=url, title=title, release_time=release_time,
+                                                site_name=NAME)
+                    if not is_continue:
                         next_keyword = True
                         break
-                    base_parser.save_video_info(image_url=image_url, url=url, title=title, release_time=release_time,
-                                                site_name=NAME)
-                except:
-                    pass
+
+                except Exception as e:
+                    log.error(e)
 
             if next_keyword:
                 break

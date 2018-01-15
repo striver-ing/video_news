@@ -56,7 +56,6 @@ def get_release_time(release_time):
                 release_time = '%s-%s' % (timeStr[0:4], release_time)
     except Exception as e:
         log.error(e)
-        release_time = ''
     finally:
         return release_time
 
@@ -101,12 +100,13 @@ def add_root_url(keywords):
                 print(release_time)
                 release_time = get_release_time(release_time)
                 print(release_time)
-                current_date = tools.get_current_date('%Y-%m-%d')
-                if current_date > release_time:
+
+                is_continue = base_parser.save_video_info(image_url=image_url, url=url, title=title, release_time=release_time,
+                                            site_name=NAME)
+                if not is_continue:
                     next_keyword = True
                     break
-                base_parser.save_video_info(image_url=image_url, url=url, title=title, release_time=release_time,
-                                            site_name=NAME)
+
             if next_keyword:
                 break
 

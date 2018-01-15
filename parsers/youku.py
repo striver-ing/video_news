@@ -18,19 +18,48 @@ NAME = '优酷'
 
 def get_release_time(release_time):
     try:
-        if '小时前' in release_time:
-            print(release_time)
+        data = tools.time.time()
+        ltime = tools.time.localtime(data)
+        timeStr = tools.time.strftime("%Y-%m-%d", ltime)
+        if '年前' in release_time:
+            years = tools.re.compile('(\d+)年前').findall(release_time)
+            years_ago = (tools.datetime.datetime.now() - tools.datetime.timedelta(days=int(years[0]) * 365))
+            release_time = years_ago.strftime("%Y-%m-%d")
+
+        elif '月前' in release_time:
+            months = tools.re.compile('(\d+)月前').findall(release_time)
+            months_ago = (tools.datetime.datetime.now() - tools.datetime.timedelta(days=int(months[0]) * 30))
+            release_time = months_ago.strftime("%Y-%m-%d")
+
+        elif '周前' in release_time:
+            weeks = tools.re.compile('(\d+)周前').findall(release_time)
+            weeks_ago = (tools.datetime.datetime.now() - tools.datetime.timedelta(days=int(weeks[0]) * 7))
+            release_time = weeks_ago.strftime("%Y-%m-%d")
+
+        elif '天前' in release_time:
+            ndays = tools.re.compile('(\d+)天前').findall(release_time)
+            days_ago = (tools.datetime.datetime.now() - tools.datetime.timedelta(days=int(ndays[0])))
+            release_time = days_ago.strftime("%Y-%m-%d")
+
+        elif '昨天' in release_time:
+            days_ago = (tools.datetime.datetime.now() - tools.datetime.timedelta(days = 1))
+            release_time = days_ago.strftime("%Y-%m-%d")
+
+        elif '小时前' in release_time:
             nhours = tools.re.compile('(\d+)小时前').findall(release_time)
             hours_ago = (tools.datetime.datetime.now() - tools.datetime.timedelta(hours=int(nhours[0])))
             release_time = hours_ago.strftime("%Y-%m-%d %H:%M")
+
         elif tools.re.compile('分钟前').findall(release_time):
             nminutes = tools.re.compile('(\d+)分钟前').findall(release_time)
             minutes_ago = (tools.datetime.datetime.now() - tools.datetime.timedelta(minutes=int(nminutes[0])))
             release_time = minutes_ago.strftime("%Y-%m-%d %H:%M")
+
         else:
-            release_time = ''
-    except:
-        release_time = ''
+            if len(release_time) < 10:
+                release_time = '%s-%s' % (timeStr[0:4], release_time)
+    except Exception as e:
+        log.error(e)
     finally:
         return release_time
 
@@ -55,10 +84,13 @@ def add_root_url(keywords):
         ''' % str(keywords))
     for keyword in keywords:
         next_keyword = False
+        quote_keyword = tools.quote(keyword)
         for page_index in range(1, 10):
-            keyword = tools.quote(keyword)
             url = 'http://www.soku.com/search_video/q_%s_orderby_2_limitdate_0?spm=a2h0k.8191407.0.0&site=14&' \
-                  '_lg=10&page=%s' % (keyword, page_index)
+                  '_lg=10&page=%s' % (quote_keyword, page_index)
+            log.debug('''
+                处理: %s
+                url : %s'''%(keyword, url))
             html, res = tools.get_html_by_requests(url)
             video_list_title = tools.get_tag(html, 'div', {'class': 'v-thumb'})
             video_list_url = tools.get_tag(html, 'div', {'class': 'v-meta'})
@@ -80,12 +112,14 @@ def add_root_url(keywords):
                                               fetch_one=True)
                 release_time = get_release_time(release_time)
                 print(release_time)
-                current_date = tools.get_current_date('%Y-%m-%d')
-                if current_date > release_time:
+
+                is_continue = base_parser.save_video_info(image_url=image_url, url=url, title=title, release_time=release_time,
+                                            site_name=NAME)
+
+                if not is_continue:
                     next_keyword = True
                     break
-                base_parser.save_video_info(image_url=image_url, url=url, title=title, release_time=release_time,
-                                            site_name=NAME)
+
             if next_keyword:
                 break
 

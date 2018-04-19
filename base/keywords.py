@@ -21,7 +21,7 @@ class Keywords():
         self._clues = self.get_clues()
 
     def get_clues(self):
-        sql = 'select t.id clues_id,to_char(t.keyword2),to_char(t.keyword3),t.zero_id, FIRST_ID, second_id  from TAB_IOPM_CLUES t where zero_id != 7' # 7 为传播途径
+        sql = 'select t.id clues_id,to_char(t.keyword2),to_char(t.keyword3),t.zero_id, FIRST_ID, second_id  from TAB_IOPM_CLUES t where zero_id != 7 order by record_time desc' # 7 为传播途径
         clues = self._oracledb.find(sql)
         return clues
 
@@ -45,5 +45,8 @@ class Keywords():
         return keywords
 
 if __name__ == '__main__':
-    keywords = Keywords().get_keywords()
-    print(keywords)
+    compare_keywords = Keywords()
+
+    keywords = compare_keywords.get_keywords()
+    for key in keywords:
+        print(key)
